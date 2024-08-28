@@ -1,3 +1,5 @@
+// #arjungsanal
+
 import Image from "next/image";
 import {
     BrainCogIcon,
@@ -88,7 +90,7 @@ export default function Home() {
                             <dt className="inline font-semiold text-gray-900 ">
                                 <feature.icon
                                 aria-hidden = 'true'
-                                className="absolute left-1 top-1 h-5 w-5 text-indigo-600"
+                                className="absolute left-1 top-1 h-5 w-5 text-indigo-600 "
                                 />
                             </dt>
                             <dd>{feature.description}</dd>
