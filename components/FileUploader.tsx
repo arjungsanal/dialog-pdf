@@ -31,7 +31,7 @@ function FileUploader() {
                     </>):(
                         <>
                             <CircleArrowDown className={'h-10 w-10 animate-bounce'}/>
-                    <p>Drag 'n' drop some files here, or click to select files</p>
+                    <p>Drag & drop some files here, or click to select files</p>
                         </>
                 ) }
             </div>
