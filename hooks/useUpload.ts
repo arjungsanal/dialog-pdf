@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {db, storage} from "@/firebase";
 import {getDownloadURL, ref, uploadBytesResumable} from "@firebase/storage";
 import {doc, setDoc} from "@firebase/firestore";
+import {serverTimestamp} from "@firebase/database";
+import {generateEmbeddings} from "@/actions/generateEmbeddings";
 
 export enum StatusText{
     UPLOADING = "Uploading files...",
@@ -16,7 +18,7 @@ export enum StatusText{
 export type Status = StatusText[keyof StatusText];
 
 function UseUpload() {
-    const [progess, setProgess] = useState<number | null>(null);
+    const [progress, setProgess] = useState<number | null>(null);
     const [status, setStatus] = useState<Status | null>(null);
     const [fileId, setFileId] = useState<string | null>(null);
     const {user} = useUser();
@@ -48,12 +50,18 @@ function UseUpload() {
               type : file.type,
               downloadUrl : downloadUrl,
               ref : uploadTask.snapshot.ref.fullPath,
-              createdAt : new Date(),
+              createdAt : serverTimestamp() ,
           })
+
+          setStatus(StatusText.GENERATING);
+          // AI Embedddings will go here
+          await generateEmbeddings(fileIdToUploadTo);
+
+          setFileId(fileIdToUploadTo);
       })
 
     };
-
+return{progress,status,fileId,handleUpload}
 }
 
 export default UseUpload
