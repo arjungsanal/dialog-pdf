@@ -102,7 +102,7 @@ function Chat({id} : {id : string}) {
             <div className={'flex-1 w-full'}>
                 {/*CHat messages */}
                 {messages.map((message,index) =>(    
-                    <div key={index}>
+                    <div key={message.id}>
                         <p>{message.message}</p>
                     </div>
                 ))}
