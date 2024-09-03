@@ -15,10 +15,10 @@ params : {id}}:{
     const ref = await adminDb.collection("users").doc(userId!).collection("files").doc(id).get();
     const url = ref.data()?.downloadUrl;
     return (
-        <div className={'grid lg:grid-cols-5 h-full overflow-hidden'}>
+        <div className={'grid lg:grid-cols-5 h-full overflow-hidden '}>
             {/*Two sections on both sides */}
             {/*Right*/}
-            <div className={'col-span-5 lg:col-span2 overflow-y-auto'}>
+            <div className={'col-span-5 lg:col-span-2 overflow-y-auto'}>
                 {/*Chat Component */}
                 <Chat id={id}/>
             </div>
