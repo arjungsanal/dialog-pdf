@@ -31,7 +31,7 @@ function FileUploader() {
             // Toast notification
         }
 
-    }, []);
+    }, [handleUpload]);
 
     const statusIcons :{
         [key in StatusText] : JSX.Element;

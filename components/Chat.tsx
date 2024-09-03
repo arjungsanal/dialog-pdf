@@ -1,5 +1,5 @@
 'use client'
-import {FormEvent , useEffect , useState , useTransition} from "react";
+import {FormEvent, useEffect, useRef, useState, useTransition} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {askQuestion } from '@/actions/askQuestion'
@@ -9,6 +9,9 @@ import {useCollection} from "react-firebase-hooks/firestore";
 import {useUser} from "@clerk/nextjs";
 import {collection,orderBy,query} from "@firebase/firestore";
 import {db} from "@/firebase";
+import OpenAI from "openai";
+import ChatCompletionMessage = OpenAI.ChatCompletionMessage;
+import ChatMessage from "@/components/ChatMessage";
 
 export type Message = {
     id? : string;
@@ -23,6 +26,7 @@ function Chat({id} : {id : string}) {
     const [input, setInput] = useState("");
     const [messages , setMessages ] = useState<Message[]>([]);
     const [isPending, startTransition] = useTransition();
+    const bottomofChatRef = useRef<HTMLDivElement>(null)
 
     const [snapshot,loading,error] = useCollection(
         user &&
@@ -31,6 +35,13 @@ function Chat({id} : {id : string}) {
             orderBy("createdAt","asc")
         )
     );
+
+    useEffect(() => {
+        bottomofChatRef.current?.scrollIntoView({
+            behavior : "smooth",
+        })
+    }, [messages]);
+
 
     useEffect(() => {
    if(!snapshot) return;
@@ -101,11 +112,29 @@ function Chat({id} : {id : string}) {
             {/*Chat Content */}
             <div className={'flex-1 w-full'}>
                 {/*CHat messages */}
-                {messages.map((message,index) =>(    
-                    <div key={message.id}>
-                        <p>{message.message}</p>
+                {loading ? (
+                    <div className={'flex items-center justify-center'}>
+                        <Loader2Icon className={'animate-spin h-20 w-20 text-indigo-600'}/>
                     </div>
-                ))}
+                ) : (
+                    <div className={'p-5'}>
+                        {messages.length === 0 && (
+                            <ChatMessage key={'placeholder'}
+                            message={{
+                                role:"ai",
+                            message:"Ask me anything about the document!",
+                            createdAt: new Date(),
+                        }}
+                                         />
+                        )}
+                        {
+                            messages.map((message,index) =>(
+                            <ChatMessage key={index} message={message} />
+                           ))}
+                    <div ref={bottomofChatRef} />
+                    </div>
+                )}
+
             </div>
             <form
             onSubmit={handleSubmit}
