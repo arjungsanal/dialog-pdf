@@ -82,7 +82,7 @@ export default function Home() {
 
             <div className='relative overflow-hidden pt-16 '>
                 <div className='mx-auto max-w-7xl px-6 lg:px-8'>
-                    <Image src="https://i.imgur.com/Jwoe7G2.png" alt="App Screenshot"
+                    <Image src="/assets/landing.png" alt="App Screenshot"
                            width={2432} height={1442} className="mb-[0%] rounded-xl shadow-2xl ring-1 ring-gray-900/10 "
                     />
 
@@ -110,7 +110,7 @@ export default function Home() {
                 </dl>
             </div>
             <div className={'flex justify-center items-center bg-white shadow-sm p-5 border-t mt-10 text-gray-600'}>
-                <p>Developed by @arjungsanal | © 2024</p>
+                <p>Developed to explore | © 2025</p>
             </div>
         </div>
     </main>

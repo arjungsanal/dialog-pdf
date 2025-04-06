@@ -19,6 +19,7 @@
     "byte-size": "^9.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "elevenlabs-node": "^2.0.3",
     "firebase": "^10.13.1",
     "firebase-admin": "^12.4.0",
     "langchain": "^0.2.17",
