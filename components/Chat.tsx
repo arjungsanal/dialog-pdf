@@ -10,7 +10,7 @@ import {useUser} from "@clerk/nextjs";
 import {collection,orderBy,query} from "@firebase/firestore";
 import {db} from "@/firebase";
 import OpenAI from "openai";
-import ChatCompletionMessage = OpenAI.ChatCompletionMessage;
+// import ChatCompletionMessage = OpenAI.ChatCompletionMessage;
 import ChatMessage from "@/components/ChatMessage";
 
 export type Message = {
