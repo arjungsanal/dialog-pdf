@@ -1,3 +1,4 @@
+// Import necessary dependencies for document processing, chat functionality, and vector storage
 import {ChatOpenAI} from "@langchain/openai";
 import {PDFLoader} from "@langchain/community/document_loaders/fs/pdf";
 import {RecursiveCharacterTextSplitter} from "@langchain/textsplitters";
@@ -14,14 +15,20 @@ import {Index , RecordMetadata} from "@pinecone-database/pinecone";
 import {adminDb} from "@/firebaseAdmin";
 import {auth} from "@clerk/nextjs/server";
 
-//Intialising the model
+// Initialize OpenAI model with API key and model name
 const model = new ChatOpenAI({
     apiKey : process.env.OPENAI_API_KEY,
     modelName: "gpt-4o-mini",
 });
 
+// Define the Pinecone index name for vector storage
 export const indexName = "dialogpdf";
 
+/**
+ * Fetches chat history from Firebase for a specific document
+ * @param docId - The document ID to fetch chat history for
+ * @returns Array of chat messages
+ */
 async function fetchMessagesFromDB(docId:string){
     const {userId} = await auth();
     if(!userId){
@@ -40,6 +47,11 @@ async function fetchMessagesFromDB(docId:string){
     return chatHistory;
 }
 
+/**
+ * Generates document chunks from a PDF file
+ * @param docId - The document ID to process
+ * @returns Array of split documents
+ */
 export async function generateDocs(docId:string){
     const {userId} = await auth();
     if(!userId) {throw new Error("User not found in generateDocs");}
@@ -70,16 +82,23 @@ export async function generateDocs(docId:string){
     return splitDocs;
 }
 
-
-
-
-//Helper class for index
+/**
+ * Checks if a namespace exists in the Pinecone index
+ * @param index - Pinecone index instance
+ * @param namespace - Namespace to check
+ * @returns boolean indicating if namespace exists
+ */
 async function namespaceExists(index : Index<RecordMetadata>  , namespace: string){
     if(namespace===null){ throw new Error("No namespace value provided");}
     const {namespaces} = await index.describeIndexStats();
     return namespaces?.[namespace] !== undefined;
 }
 
+/**
+ * Generates and stores document embeddings in Pinecone
+ * @param docId - The document ID to process
+ * @returns PineconeStore instance
+ */
 export async function generateEmbeddingsInPinecodeVectorStore(docId:string){
     const {userId} = await auth();
 
@@ -120,17 +139,25 @@ export async function generateEmbeddingsInPinecodeVectorStore(docId:string){
     }
 }
 
+/**
+ * Generates AI completion based on document context and chat history
+ * @param docId - The document ID to use for context
+ * @param question - The user's question
+ * @returns AI-generated answer
+ */
 const generateLangchainCompletion = async (docId:string,question:string) => {
+    // Get vector store with embeddings
     let pineconeVectorStore = await generateEmbeddingsInPinecodeVectorStore(docId);
-    // Create a retriever through the Pinecone Vector Store
-
+    
     if(!pineconeVectorStore){
         throw new Error('Pinecone vector store not found');
     }
+
+    // Create retriever and get chat history
     const retriever = pineconeVectorStore.asRetriever();
     const chatHistory = await fetchMessagesFromDB(docId);
 
-    // Defining prompt  template
+    // Define prompt template with chat history
     const historyAwarePrompt = ChatPromptTemplate.fromMessages([
         ...chatHistory,
         ["user","{input}"],
@@ -140,6 +167,7 @@ const generateLangchainCompletion = async (docId:string,question:string) => {
         ]
     ]);
 
+    // Create history-aware retriever chain for context-aware responses
     console.log("Creating a history aware retriever chain");
     const historyAwareRetrieverChain = await createHistoryAwareRetriever({
         llm:model,
@@ -147,7 +175,8 @@ const generateLangchainCompletion = async (docId:string,question:string) => {
         rephrasePrompt : historyAwarePrompt,
     });
 
-    console.log("Defining the prompt tempalte for answering the question");
+    // Define prompt template for final answer generation
+    console.log("Defining the prompt template for answering the question");
     const historyAwareRetrievalPrompt = ChatPromptTemplate.fromMessages([
         [
             "system",
@@ -157,20 +186,21 @@ const generateLangchainCompletion = async (docId:string,question:string) => {
         ["user","{input}"],
     ]);
 
-    // Creating a document combining chain
+    // Create chain to combine retrieved documents
     console.log("Creating a document combining chain");
     const historyAwareCombineDocsChain = await createStuffDocumentsChain({
         llm:model,
         prompt:historyAwareRetrievalPrompt,
     });
 
-    // Create the main retrieval chain that combines the history-aware retriever and document combining chains
+    // Create final retrieval chain
     console.log("Creating the main retrieval chain");
     const conversationalRetrievalChain = await createRetrievalChain({
         retriever: historyAwareRetrieverChain,
         combineDocsChain : historyAwareCombineDocsChain,
     });
 
+    // Generate and return the answer
     console.log("Running the chain with a sample question");
     const reply = await conversationalRetrievalChain.invoke({
         chat_history : chatHistory,
@@ -178,7 +208,7 @@ const generateLangchainCompletion = async (docId:string,question:string) => {
     });
 
     console.log(reply.answer);
-    console.log("Sucess");
+    console.log("Success");
     return reply.answer;
 }
 

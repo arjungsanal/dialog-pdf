@@ -8,6 +8,7 @@ export default function FunLoadingPage() {
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('');
   
+  {/* eslint-disable-next-line react/no-unescaped-entities */}
   const funnyMessages = [
     "Convincing hamsters to power the servers...",
     "Reticulating splines...",
